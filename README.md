@@ -1,1 +1,1 @@
-# YankeeScraper
+# YankeeScraper or discord tournament scraper
