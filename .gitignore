@@ -2,3 +2,4 @@ __pycache__/
 tournaments_cache.json
 .env
 venv/
+*.ipynb_checkpoints
