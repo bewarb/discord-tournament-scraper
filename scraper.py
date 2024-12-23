@@ -19,16 +19,18 @@ def scrape_tournaments():
     for row in table.find("tbody").find_all("tr"):
         try:
             # Extract data from each cell
-            date = row.find("td").text.strip()
-            name = row.find("td").find_next("td").text.strip()
-            link = row.find("td").find_next("td").find("a")["href"]
-            location = row.find("td").find_next("td").find_next("td").text.strip()
-            type_ = row.find("td").find_next("td").find_next("td").find_next("td").text.strip()
-            level = row.find("td").find_next("td").find_next("td").find_next("td").find_next("td").text.strip()
-            cost = row.find("td").find_next("td").find_next("td").find_next("td").find_next("td").find_next("td").find_next("td").text.strip()
-            max_teams = row.find("td").find_next("td").find_next("td").find_next("td").find_next("td").find_next("td").find_next("td").find_next("td").text.strip()
-            confirmed = row.find("td").find_next("td").find_next("td").find_next("td").find_next("td").find_next("td").find_next("td").find_next("td").find_next("td").text.strip()
-            status = row.find("td").find_next("td").find_next("td").find_next("td").find_next("td").find_next("td").find_next("td").find_next("td").find_next("td").find_next("td").text.strip()
+            cells = row.find_all("td")  # Get all cells in the row
+
+            date = cells[0].text.strip()  # Date column
+            name = cells[1].text.strip()  # Tournament name
+            link = cells[1].find("a")["href"] if cells[1].find("a") else None  # Tournament detail link
+            location = cells[2].text.strip()  # Location column
+            type_ = cells[3].text.strip()  # Type column
+            level = cells[4].text.strip()  # Level column
+            cost = cells[7].text.strip()  # Cost column
+            max_teams = cells[9].text.strip()  # Max Teams column
+            confirmed = cells[10].text.strip()  # Confirmed Teams column
+            status = cells[11].text.strip()  # Status column
 
             # Append the extracted data as a dictionary
             tournaments.append({
@@ -43,8 +45,8 @@ def scrape_tournaments():
                 "confirmed": confirmed,
                 "status": status
             })
-        except AttributeError:
-            # Skip rows with missing data
+        except (AttributeError, IndexError):
+            # Skip rows with missing or malformed data
             continue
 
     return tournaments
