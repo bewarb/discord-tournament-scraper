@@ -2,21 +2,43 @@ import discord
 from discord.ext import commands
 import os
 from dotenv import load_dotenv
+from scraper import scrape_tournaments
+from filters import filter_tournaments
 
-# Load environment variables
-load_dotenv()
-TOKEN = os.getenv("DISCORD_TOKEN")
+bot = commands.Bot(command_prefix="!")
 
-# Set up intents
-intents = discord.Intents.default()  # Default intents
-intents.message_content = True  # Enable message content intent
+@bot.command(name="tournaments")
+async def tournaments_command(ctx, *, filters=None):
+    """
+    Command to fetch and filter tournaments.
 
-# Initialize bot with intents
-bot = commands.Bot(command_prefix="!", intents=intents)
+    Args:
+        ctx: Discord context.
+        filters (str): User-provided filters in the format "key=value,key=value".
+    """
+    # Scrape tournaments or load from cache
+    tournaments = scrape_tournaments()
 
-@bot.command(name="test")
-async def test_command(ctx):
-    await ctx.send("Bot is running!")
+    # Parse filters from user input
+    filter_args = {}
+    if filters:
+        try:
+            for f in filters.split(","):
+                key, value = f.split("=")
+                filter_args[key.strip()] = value.strip()
+        except ValueError:
+            await ctx.send("Invalid filter format. Use key=value,key=value.")
+            return
 
-# Run the bot
-bot.run(TOKEN)
+    # Apply filters
+    filtered_tournaments = filter_tournaments(tournaments, **filter_args)
+
+    # Send results
+    if not filtered_tournaments:
+        await ctx.send("No tournaments found with the specified filters.")
+        return
+
+    message = "**Filtered Tournaments:**\n"
+    for t in filtered_tournaments:
+        message += f"🔹 **Name:** {t['name']} | **Date:** {t['date']} | **Location:** {t['location']} | **Type:** {t['type']}\n"
+    await ctx.send(message)
